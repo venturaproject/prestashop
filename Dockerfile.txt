@@ -1,27 +1,31 @@
-# To run files with the same group as your primary user
-ARG VERSION
+FROM prestashop/prestashop:1.7
 
-FROM prestashop/prestashop-git:$VERSION
+ARG MYSQLPASSWORD
+ARG MYSQLHOST
+ARG MYSQLPORT
+ARG MYSQLDATABASE
+ARG MYSQLUSER
+ARG SIZE_LIMIT
 
-ARG GROUP_ID
-ARG USER_ID
-
-# To run files with the same group as your primary user
-RUN groupmod -g $GROUP_ID www-data \
-  && usermod -u $USER_ID -g $GROUP_ID www-data
-
-COPY .docker/wait-for-it.sh /tmp/
-COPY .docker/docker_run_git.sh /tmp/
+ENV PRESTASHOP_DB_HOST=$MYSQLHOST:$MYSQLPORT
+ENV PRESTASHOP_DB_NAME=$MYSQLDATABASE
+ENV PRESTASHOP_DB_USER=$MYSQLUSER
+ENV PRESTASHOP_DB_PASSWORD=$MYSQLPASSWORD
+ENV PRESTASHOP_TABLE_PREFIX="PS_"
 
 RUN mkdir -p /var/www/.npm
 RUN chown -R www-data:www-data /var/www/.npm
 
 # These two directories are docker mounted volumes
-RUN chown -R www-data:www-data /var/www/html/vendor
-RUN chown -R www-data:www-data /var/www/html/var
+RUN chown -R www-data:www-data /var/www/html
+RUN chown -R www-data:www-data /var/www/html
 
-RUN curl -sL https://deb.nodesource.com/setup_14.x | bash -
-RUN apt install -y nodejs
+RUN echo "ServerName 0.0.0.0" >> /etc/apache2/apache2.conf
+RUN echo "DirectoryIndex index.php index.html" >> /etc/apache2/apache2.conf
+
+# Set the maximum upload file size directly in the PHP configuration
+RUN echo "upload_max_filesize = $SIZE_LIMIT" >> /usr/local/etc/php/php.ini
+RUN echo "post_max_size = $SIZE_LIMIT" >> /usr/local/etc/php/php.ini
 
 # Install mailutils to make sendmail work
 RUN apt install -y \
