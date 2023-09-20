@@ -13,9 +13,6 @@ ENV PRESTASHOP_DB_USER=$MYSQLUSER
 ENV PRESTASHOP_DB_PASSWORD=$MYSQLPASSWORD
 ENV PRESTASHOP_TABLE_PREFIX="PS_"
 
-RUN mkdir -p /var/www/.npm
-RUN chown -R www-data:www-data /var/www/.npm
-
 # These two directories are docker mounted volumes
 RUN chown -R www-data:www-data /var/www/html
 RUN chown -R www-data:www-data /var/www/html
